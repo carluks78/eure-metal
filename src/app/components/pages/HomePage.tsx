@@ -163,6 +163,31 @@ function SectionTitle({ label, title, subtitle }: { label?: string; title: strin
   );
 }
 
+      function InfoMetierTag() {
+  return (
+    <div style={{
+      marginTop: "1.5rem",
+      padding: "12px 16px",
+      borderRadius: "12px",
+      border: "1px solid rgba(34,197,94,0.25)",
+      background: "rgba(34,197,94,0.08)",
+      color: "#d1d5db",
+      fontSize: "0.85rem",
+      lineHeight: 1.6,
+      maxWidth: "720px",
+      marginLeft: "auto",
+      marginRight: "auto",
+    }}>
+      ✔️ <strong>Particuliers & professionnels</strong> : Enlèvement ou dépôt direct de vos métaux et ferraille sur site<br />
+      ✔️ <strong>Paiement immédiat</strong> après pesée et estimation<br />
+      ✔️ <strong>VHU (véhicules hors d’usage)</strong> : réception et enlèvement des véhicules<br />
+      ✔️ Traitement réalisé par{" "}
+      <strong>Eure Métal</strong> (centre VHU agréé)<br />
+      ⚠️ Nous ne prenons pas les caravanes
+    </div>
+  );
+}
+
 export function HomePage() {
   const [activeFaqCat, setActiveFaqCat] = useState(0);
 
