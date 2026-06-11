@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.json$
+
+Sitemap: https://www.eure-metal-recyclage.fr/sitemap.xml
+Host: https://www.eure-metal-recyclage.fr
