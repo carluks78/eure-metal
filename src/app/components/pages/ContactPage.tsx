@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Phone, Mail, MapPin, Clock, CheckCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, CheckCircle, MessageSquare } from 'lucide-react';
 
 type FormData = {
   nom: string;
@@ -12,6 +12,8 @@ type FormData = {
   rgpd: boolean;
 };
 
+type SendMode = 'sms' | 'email';
+
 const services = [
   'Enlèvement d\'épave (VHU)',
   'Rachat de fer & métaux',
@@ -21,6 +23,45 @@ const services = [
   'Rachat poids lourds / TP',
   'Autre demande',
 ];
+
+// Destinataires de la demande
+const SMS_RECIPIENT = '+33610399381';
+const EMAIL_RECIPIENT = 'eure.metal494@orange.fr';
+
+function buildMessageBody(data: FormData): string {
+  const lines = [
+    'Nouvelle demande - site EURE MÉTAL',
+    `Nom : ${data.nom}`,
+    `Téléphone : ${data.telephone}`,
+    `Email : ${data.email}`,
+    `Ville : ${data.ville}`,
+    `Service : ${data.service}`,
+    `Message : ${data.message || '(aucun message)'}`,
+  ];
+  return lines.join('\n');
+}
+
+function buildEmailSubject(data: FormData): string {
+  return `Demande de devis - ${data.service || 'Site web'}`;
+}
+
+function buildSmsLink(data: FormData): string {
+  // iOS et Android n'utilisent pas le même séparateur pour le paramètre "body"
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const separator = isIOS ? '&' : '?';
+  return `sms:${SMS_RECIPIENT}${separator}body=${encodeURIComponent(buildMessageBody(data))}`;
+}
+
+function buildGmailLink(data: FormData): string {
+  const params = new URLSearchParams({
+    view: 'cm',
+    fs: '1',
+    to: EMAIL_RECIPIENT,
+    su: buildEmailSubject(data),
+    body: buildMessageBody(data),
+  });
+  return `https://mail.google.com/mail/?${params.toString()}`;
+}
 
 function OpenIndicator() {
   const now = new Date();
@@ -55,7 +96,9 @@ export function ContactPage() {
   const [formData, setFormData] = useState<FormData>({
     nom: '', telephone: '', email: '', ville: '', service: '', message: '', rgpd: false,
   });
+  const [sendMode, setSendMode] = useState<SendMode>('sms');
   const [submitted, setSubmitted] = useState(false);
+  const [actionLink, setActionLink] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -67,6 +110,17 @@ export function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (sendMode === 'sms') {
+      const link = buildSmsLink(formData);
+      setActionLink(link);
+      // Ouvre l'application de messages du visiteur avec le SMS prérempli
+      window.location.href = link;
+    } else {
+      const link = buildGmailLink(formData);
+      setActionLink(link);
+      // Ouvre Gmail dans un nouvel onglet avec l'email prérempli
+      window.open(link, '_blank', 'noopener,noreferrer');
+    }
     setSubmitted(true);
   };
 
@@ -216,14 +270,84 @@ export function ContactPage() {
                 <div style={{ textAlign: 'center', padding: '3rem 2rem' }}>
                   <CheckCircle size={48} style={{ color: '#22C55E', margin: '0 auto 1rem' }} />
                   <h3 style={{ color: '#1A1A1A', fontFamily: "'Oswald', sans-serif", fontWeight: 600, fontSize: '1.375rem', marginBottom: '0.75rem' }}>
-                    Message envoyé !
+                    {sendMode === 'sms' ? 'Votre SMS est prêt !' : 'Votre email est prêt !'}
                   </h3>
-                  <p style={{ color: '#6B7280', lineHeight: 1.6 }}>
-                    Nous vous répondrons dans les plus brefs délais. Pour une réponse immédiate, appelez le <a href="tel:0232372986" style={{ color: '#3A8C3E', fontWeight: 600 }}>02 32 37 29 86</a>.
+                  <p style={{ color: '#6B7280', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+                    {sendMode === 'sms' ? (
+                      <>Votre application de messages s'est ouverte avec votre demande préremplie. Il vous suffit d'appuyer sur <strong>Envoyer</strong> pour nous la transmettre par SMS.</>
+                    ) : (
+                      <>Un nouvel onglet Gmail s'est ouvert avec votre demande préremplie. Il vous suffit de cliquer sur <strong>Envoyer</strong> pour nous la transmettre par email.</>
+                    )}
+                    {' '}Pour une réponse immédiate, appelez le <a href="tel:0232372986" style={{ color: '#3A8C3E', fontWeight: 600 }}>02 32 37 29 86</a>.
                   </p>
+                  <a
+                    href={actionLink}
+                    target={sendMode === 'email' ? '_blank' : undefined}
+                    rel={sendMode === 'email' ? 'noopener noreferrer' : undefined}
+                    style={{ color: '#3A8C3E', fontWeight: 600, fontSize: '0.8125rem', textDecoration: 'underline' }}
+                  >
+                    {sendMode === 'sms'
+                      ? "L'application ne s'est pas ouverte automatiquement ? Cliquez ici"
+                      : "L'onglet Gmail ne s'est pas ouvert ? Cliquez ici"}
+                  </a>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  {/* Sélecteur de mode d'envoi */}
+                  <div>
+                    <label style={{ display: 'block', color: '#374151', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+                      Comment souhaitez-vous nous envoyer votre demande ?
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => setSendMode('sms')}
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          padding: '0.75rem',
+                          border: `2px solid ${sendMode === 'sms' ? '#3A8C3E' : '#D1D5DB'}`,
+                          backgroundColor: sendMode === 'sms' ? '#F0FAF5' : '#F9FAFB',
+                          color: sendMode === 'sms' ? '#2D7031' : '#6B7280',
+                          fontFamily: "'Oswald', sans-serif",
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          letterSpacing: '0.03em',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        <MessageSquare size={16} /> SMS
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSendMode('email')}
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          padding: '0.75rem',
+                          border: `2px solid ${sendMode === 'email' ? '#3A8C3E' : '#D1D5DB'}`,
+                          backgroundColor: sendMode === 'email' ? '#F0FAF5' : '#F9FAFB',
+                          color: sendMode === 'email' ? '#2D7031' : '#6B7280',
+                          fontFamily: "'Oswald', sans-serif",
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          letterSpacing: '0.03em',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        <Mail size={16} /> Email (Gmail)
+                      </button>
+                    </div>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="grid-cols-1 sm:grid-cols-2">
                     <div>
                       <label style={{ display: 'block', color: '#374151', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.375rem' }}>
@@ -358,7 +482,7 @@ export function ContactPage() {
                     onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#2D7031'; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#3A8C3E'; }}
                   >
-                    ENVOYER MA DEMANDE
+                    {sendMode === 'sms' ? 'ENVOYER PAR SMS' : 'ENVOYER PAR EMAIL'}
                   </button>
                 </form>
               )}
