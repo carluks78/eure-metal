@@ -52,15 +52,11 @@ function buildSmsLink(data: FormData): string {
   return `sms:${SMS_RECIPIENT}${separator}body=${encodeURIComponent(buildMessageBody(data))}`;
 }
 
-function buildGmailLink(data: FormData): string {
-  const params = new URLSearchParams({
-    view: 'cm',
-    fs: '1',
-    to: EMAIL_RECIPIENT,
-    su: buildEmailSubject(data),
-    body: buildMessageBody(data),
-  });
-  return `https://mail.google.com/mail/?${params.toString()}`;
+function buildEmailLink(data: FormData): string {
+  const subject = encodeURIComponent(buildEmailSubject(data));
+  const body = encodeURIComponent(buildMessageBody(data));
+
+  return `mailto:${EMAIL_RECIPIENT}?subject=${subject}&body=${body}`;
 }
 
 function OpenIndicator() {
@@ -116,10 +112,9 @@ export function ContactPage() {
       // Ouvre l'application de messages du visiteur avec le SMS prérempli
       window.location.href = link;
     } else {
-      const link = buildGmailLink(formData);
-      setActionLink(link);
-      // Ouvre Gmail dans un nouvel onglet avec l'email prérempli
-      window.open(link, '_blank', 'noopener,noreferrer');
+      const link = buildEmailLink(formData);
+setActionLink(link);
+window.location.href = link;
     }
     setSubmitted(true);
   };
