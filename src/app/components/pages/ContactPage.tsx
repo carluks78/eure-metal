@@ -58,6 +58,12 @@ function buildEmailLink(data: FormData): string {
 
   return `mailto:${EMAIL_RECIPIENT}?subject=${subject}&body=${body}`;
 }
+function buildGmailLink(data: FormData): string {
+  const subject = encodeURIComponent(buildEmailSubject(data));
+  const body = encodeURIComponent(buildMessageBody(data));
+
+  return `googlegmail://co?to=${EMAIL_RECIPIENT}&subject=${subject}&body=${body}`;
+}
 
 function OpenIndicator() {
   const now = new Date();
@@ -105,19 +111,25 @@ export function ContactPage() {
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (sendMode === 'sms') {
-      const link = buildSmsLink(formData);
-      setActionLink(link);
-      // Ouvre l'application de messages du visiteur avec le SMS prérempli
-      window.location.href = link;
-    } else {
-      const link = buildEmailLink(formData);
-setActionLink(link);
-window.location.href = link;
-    }
+  e.preventDefault();
+
+  if (sendMode === 'sms') {
+    const link = buildSmsLink(formData);
+    setActionLink(link);
+    window.location.href = link;
     setSubmitted(true);
-  };
+  } else {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    const link = isIOS
+      ? buildGmailLink(formData)
+      : buildEmailLink(formData);
+
+    setActionLink(link);
+    window.location.href = link;
+    setSubmitted(true);
+  }
+};
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif" }}>
