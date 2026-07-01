@@ -94,9 +94,64 @@ export function Header() {
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1rem', height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
           {/* Logo */}
-          <Link to="/" style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-            <img src={logoImg} alt="Eure Métal Recyclage" style={{ height: '52px', width: 'auto', objectFit: 'contain' }} />
-          </Link>
+<Link
+  to="/"
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    textDecoration: 'none',
+    flexShrink: 0,
+  }}
+>
+  <div
+    style={{
+      position: 'relative',
+      width: '52px',
+      height: '52px',
+      borderRadius: '50%',
+      overflow: 'hidden',
+      border: `2px solid ${GREEN}`,
+      flexShrink: 0,
+    }}
+  >
+    <img
+      src={logoImg}
+      alt="Eure Métal Recyclage"
+      style={{
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+      }}
+    />
+  </div>
+
+  <div>
+    <div
+      style={{
+        fontSize: '1.1rem',
+        fontWeight: 700,
+        color: '#fff',
+        lineHeight: 1.1,
+        letterSpacing: '0.05em',
+        fontFamily: "'Oswald', sans-serif",
+      }}
+    >
+      EURE <span style={{ color: GREEN }}>MÉTAL</span>
+    </div>
+
+    <div
+      style={{
+        fontSize: '0.65rem',
+        color: '#9CA3AF',
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+      }}
+    >
+      Recyclage • Centre VHU Agréé
+    </div>
+  </div>
+</Link>
 
           {/* Desktop Nav */}
           <nav style={{ display: 'none', alignItems: 'center', gap: '0' }} className="lg:flex" id="desktop-nav">
